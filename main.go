@@ -23,8 +23,8 @@ type Accounts struct {
 			PreferredName      string `json:"preferred_name"`
 			PreferredFirstName string `json:"preferred_first_name"`
 		} `json:"owners"`
-		AccountNumber int `json:"account_number"`
-		SortCode      int `json:"sort_code"`
+		AccountNumber string `json:"account_number"`
+		SortCode      string `json:"sort_code"`
 	} `json:"accounts"`
 }
 
@@ -85,7 +85,7 @@ func getUserDetails(apiToken string, monzoAPI string) string {
 	for i := 0; i < len(parsedAccounts.Accounts); i++ {
 		if parsedAccounts.Accounts[i].Type == "uk_retail" {
 			currentAccount := parsedAccounts.Accounts[i]
-			fmt.Println("Found a current account belonging to " + currentAccount.Owners[0].PreferredName + ".")
+			fmt.Println("Found a current account (" + currentAccount.AccountNumber + ") belonging to " + currentAccount.Owners[0].PreferredName + ".")
 		} else {
 			continue
 		}
