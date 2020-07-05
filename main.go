@@ -46,7 +46,8 @@ func main() {
 	}
 
 	checkMonzoTokenWorks(apiToken, monzoAPI)
-	accountNumber := getUserDetails(apiToken, monzoAPI)
+	accountID := getUserDetails(apiToken, monzoAPI)
+	getCurrentAccountBalance(accountID, apiToken, monzoAPI)
 }
 
 func checkMonzoTokenWorks(apiToken string, monzoAPI string) bool {
@@ -80,13 +81,30 @@ func getUserDetails(apiToken string, monzoAPI string) string {
 	parsedAccounts := Accounts{}
 	json.Unmarshal(resp.Body(), &parsedAccounts)
 
-	accountNumber := ""
+	accountID := ""
 	for i := 0; i < len(parsedAccounts.Accounts); i++ {
 		if parsedAccounts.Accounts[i].Type == "uk_retail" {
 			currentAccount := parsedAccounts.Accounts[i]
-			accountNumber = currentAccount.AccountNumber
-			fmt.Println("Found a current account (" + accountNumber + ") belonging to " + currentAccount.Owners[0].PreferredName + ".")
+			accountID = currentAccount.ID
+			fmt.Println("Found a current account (" + currentAccount.AccountNumber + ") belonging to " + currentAccount.Owners[0].PreferredName + ".")
 		}
 	}
-	return accountNumber
+	return accountID
+}
+
+func getCurrentAccountBalance(accountID string, apiToken string, monzoAPI string) string {
+	client := resty.New()
+	resp, err := client.R().
+		SetQueryParams(map[string]string{
+			"account_id": accountID,
+		}).
+		SetAuthToken(apiToken).Get(monzoAPI + "/balance")
+
+	if err != nil {
+		fmt.Println("Something went wrong.")
+	}
+
+	fmt.Println(resp)
+
+	return ""
 }
