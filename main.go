@@ -1,5 +1,6 @@
 package main
 
+import "encoding/json"
 import "fmt"
 import "github.com/go-resty/resty/v2"
 import "os"
@@ -17,13 +18,29 @@ func main() {
 }
 
 func checkMonzoTokenWorks(apiToken string, monzoAPI string) bool {
+	type Ping struct {
+		Authenticated bool   `json:"authenticated"`
+		ClientID      string `json:"client_id"`
+		UserID        string `json:"user_id"`
+	}
+
 	client := resty.New()
-	resp, err := client.R().SetAuthToken(apiToken).Get(monzoAPI + "/ping/whoami")
+	var resp *resty.Response
+
+	resp, err := client.R().SetResult(&Ping{}).SetAuthToken(apiToken).Get(monzoAPI + "/ping/whoami")
 
 	if err != nil {
 		fmt.Println("Something went wrong.")
 	}
 
-	fmt.Println(resp)
-	return true
+	parsedPing := Ping{}
+	json.Unmarshal(resp.Body(), &parsedPing)
+
+	if parsedPing.Authenticated == true {
+		fmt.Println("You are authenticated with the Monzo API.")
+	} else {
+		fmt.Println("You are not authenticated with the Monzo API. Try again.")
+	}
+
+	return parsedPing.Authenticated
 }
