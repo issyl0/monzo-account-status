@@ -1,9 +1,11 @@
 package main
 
-import "encoding/json"
-import "fmt"
-import "github.com/go-resty/resty/v2"
-import "os"
+import (
+	"encoding/json"
+	"fmt"
+	"github.com/go-resty/resty/v2"
+	"os"
+)
 
 func main() {
 	const monzoAPI = "https://api.monzo.com"
@@ -15,6 +17,7 @@ func main() {
 	}
 
 	checkMonzoTokenWorks(apiToken, monzoAPI)
+	getUserDetails(apiToken, monzoAPI)
 }
 
 func checkMonzoTokenWorks(apiToken string, monzoAPI string) bool {
@@ -43,4 +46,48 @@ func checkMonzoTokenWorks(apiToken string, monzoAPI string) bool {
 	}
 
 	return parsedPing.Authenticated
+}
+
+func getUserDetails(apiToken string, monzoAPI string) string {
+	type Accounts struct {
+		Accounts []struct {
+			ID          string `json:"id"`
+			Closed      bool   `json:"closed"`
+			Created     string `json:"created"`
+			Description string `json:"description"`
+			Type        string `json:"type"`
+			Currency    string `json:"currency"`
+			CountryCode string `json:"country_code"`
+			Owners      []struct {
+				UserID             string `json:"user_id"`
+				PreferredName      string `json:"preferred_name"`
+				PreferredFirstName string `json:"preferred_first_name"`
+			} `json:"owners"`
+			AccountNumber int `json:"account_number"`
+			SortCode      int `json:"sort_code"`
+		} `json:"accounts"`
+	}
+
+	client := resty.New()
+	resp, err := client.R().SetAuthToken(apiToken).Get(monzoAPI + "/accounts")
+
+	if err != nil {
+		fmt.Println("Something went wrong.")
+	}
+
+	fmt.Println(resp)
+
+	parsedAccounts := Accounts{}
+	json.Unmarshal(resp.Body(), &parsedAccounts)
+
+	for i := 0; i < len(parsedAccounts.Accounts); i++ {
+		if parsedAccounts.Accounts[i].Type == "uk_retail" {
+			currentAccount := parsedAccounts.Accounts[i]
+			fmt.Println("Found a current account belonging to " + currentAccount.Owners[0].PreferredName + ".")
+		} else {
+			continue
+		}
+	}
+
+	return ""
 }
