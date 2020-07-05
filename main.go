@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/go-resty/resty/v2"
 	"os"
-	"strconv"
 )
 
 // Accounts implements the data structure of the `/accounts` Monzo API response.
@@ -32,9 +31,9 @@ type Accounts struct {
 // Balance implements the data structure for the `/balance` Monzo API response
 // for current accounts. Docs at https://docs.monzo.com/#balance.
 type Balance struct {
-	Balance                         int        `json:"balance"`
-	TotalBalance                    int        `json:"total_balance"`
-	BalanceIncludingFlexibleSavings int        `json:"balance_including_flexible_savings"`
+	Balance                         float64    `json:"balance"`
+	TotalBalance                    float64    `json:"total_balance"`
+	BalanceIncludingFlexibleSavings float64    `json:"balance_including_flexible_savings"`
 	Currency                        string     `json:"currency"`
 	SpendToday                      int        `json:"spend_today"`
 	LocalCurrency                   string     `json:"local_currency"`
@@ -118,13 +117,11 @@ func getCurrentAccountBalance(accountID string, apiToken string, monzoAPI string
 		fmt.Println("Something went wrong.")
 	}
 
-	fmt.Println(resp)
-
 	parsedBalance := Balance{}
 	json.Unmarshal(resp.Body(), &parsedBalance)
 
-	fmt.Println("Current account balance: " + strconv.Itoa(parsedBalance.Balance) + " " + parsedBalance.Currency + ".")
-	fmt.Println("Total balance (including savings): " + strconv.Itoa(parsedBalance.TotalBalance) + " " + parsedBalance.Currency + ".")
+	fmt.Println(fmt.Sprintf("Current account balance: %v %s.", parsedBalance.Balance/100, parsedBalance.Currency))
+	fmt.Println(fmt.Sprintf("Total balance (including savings): %v %s.", parsedBalance.TotalBalance/100, parsedBalance.Currency))
 
 	return ""
 }
