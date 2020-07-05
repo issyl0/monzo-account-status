@@ -46,7 +46,7 @@ func main() {
 	}
 
 	checkMonzoTokenWorks(apiToken, monzoAPI)
-	getUserDetails(apiToken, monzoAPI)
+	accountNumber := getUserDetails(apiToken, monzoAPI)
 }
 
 func checkMonzoTokenWorks(apiToken string, monzoAPI string) bool {
@@ -82,14 +82,13 @@ func getUserDetails(apiToken string, monzoAPI string) string {
 	parsedAccounts := Accounts{}
 	json.Unmarshal(resp.Body(), &parsedAccounts)
 
+	accountNumber := ""
 	for i := 0; i < len(parsedAccounts.Accounts); i++ {
 		if parsedAccounts.Accounts[i].Type == "uk_retail" {
 			currentAccount := parsedAccounts.Accounts[i]
-			fmt.Println("Found a current account (" + currentAccount.AccountNumber + ") belonging to " + currentAccount.Owners[0].PreferredName + ".")
-		} else {
-			continue
+			accountNumber = currentAccount.AccountNumber
+			fmt.Println("Found a current account (" + accountNumber + ") belonging to " + currentAccount.Owners[0].PreferredName + ".")
 		}
 	}
-
-	return ""
+	return accountNumber
 }
