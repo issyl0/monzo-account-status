@@ -77,8 +77,6 @@ func getUserDetails(apiToken string, monzoAPI string) string {
 		fmt.Println("Something went wrong.")
 	}
 
-	fmt.Println(resp)
-
 	parsedAccounts := Accounts{}
 	json.Unmarshal(resp.Body(), &parsedAccounts)
 
