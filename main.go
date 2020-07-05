@@ -28,8 +28,6 @@ func checkMonzoTokenWorks(apiToken string, monzoAPI string) bool {
 	}
 
 	client := resty.New()
-	var resp *resty.Response
-
 	resp, err := client.R().SetResult(&Ping{}).SetAuthToken(apiToken).Get(monzoAPI + "/ping/whoami")
 
 	if err != nil {
