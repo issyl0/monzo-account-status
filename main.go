@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/go-resty/resty/v2"
 	"os"
+	"strconv"
 )
 
 // Accounts implements the data structure of the `/accounts` Monzo API response.
@@ -26,6 +27,19 @@ type Accounts struct {
 		AccountNumber string `json:"account_number"`
 		SortCode      string `json:"sort_code"`
 	} `json:"accounts"`
+}
+
+// Balance implements the data structure for the `/balance` Monzo API response
+// for current accounts. Docs at https://docs.monzo.com/#balance.
+type Balance struct {
+	Balance                         int        `json:"balance"`
+	TotalBalance                    int        `json:"total_balance"`
+	BalanceIncludingFlexibleSavings int        `json:"balance_including_flexible_savings"`
+	Currency                        string     `json:"currency"`
+	SpendToday                      int        `json:"spend_today"`
+	LocalCurrency                   string     `json:"local_currency"`
+	LocalExchangeRate               int        `json:"local_exchange_rate"`
+	LocalSpend                      []struct{} `json:"local_spend"`
 }
 
 // Ping implements the data structure for the `/ping/whoami` Monzo API response.
@@ -105,6 +119,12 @@ func getCurrentAccountBalance(accountID string, apiToken string, monzoAPI string
 	}
 
 	fmt.Println(resp)
+
+	parsedBalance := Balance{}
+	json.Unmarshal(resp.Body(), &parsedBalance)
+
+	fmt.Println("Current account balance: " + strconv.Itoa(parsedBalance.Balance) + " " + parsedBalance.Currency + ".")
+	fmt.Println("Total balance (including savings): " + strconv.Itoa(parsedBalance.TotalBalance) + " " + parsedBalance.Currency + ".")
 
 	return ""
 }
