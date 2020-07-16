@@ -49,6 +49,21 @@ type Ping struct {
 	UserID        string `json:"user_id"`
 }
 
+// Pots implements the data structure for the `/pots` Monzo API response.
+// Docs at https://docs.monzo.com/#pots.
+type Pots struct {
+	Pots []struct {
+		ID        string  `json:"id"`
+		Name      string  `json:"name"`
+		Style     string  `json:"style"`
+		Balance   float64 `json:"balance"`
+		Currency  string  `json:"currency"`
+		CreatedAt string  `json:"created"`
+		UpdatedAt string  `json:"updated"`
+		Deleted   bool    `json:"deleted"`
+	} `json:"pots"`
+}
+
 func main() {
 	const monzoAPI = "https://api.monzo.com"
 
@@ -61,6 +76,7 @@ func main() {
 	checkMonzoTokenWorks(apiToken, monzoAPI)
 	accountID := getUserDetails(apiToken, monzoAPI)
 	getCurrentAccountBalance(accountID, apiToken, monzoAPI)
+	getPotsBalance(accountID, apiToken, monzoAPI)
 }
 
 func checkMonzoTokenWorks(apiToken string, monzoAPI string) bool {
@@ -124,4 +140,32 @@ func getCurrentAccountBalance(accountID string, apiToken string, monzoAPI string
 	fmt.Println(fmt.Sprintf("Total balance (including savings): %v %s.", parsedBalance.TotalBalance/100, parsedBalance.Currency))
 
 	return ""
+}
+
+func getPotsBalance(accountID string, apiToken string, monzoAPI string) string {
+	client := resty.New()
+	resp, err := client.R().
+		SetQueryParams(map[string]string{
+			"current_account_id": accountID,
+		}).
+		SetAuthToken(apiToken).Get(monzoAPI + "/pots")
+
+	if err != nil {
+		fmt.Println("Something went wrong.")
+	}
+
+	parsedPots := Pots{}
+	json.Unmarshal(resp.Body(), &parsedPots)
+
+	for i := 0; i < len(parsedPots.Pots); i++ {
+
+		if parsedPots.Pots[i].Deleted == true {
+			continue
+		}
+
+		fmt.Println(fmt.Sprintf("The %s pot contains %v %s.", parsedPots.Pots[i].Name, parsedPots.Pots[i].Balance/100, parsedPots.Pots[i].Currency))
+	}
+
+	return ""
+
 }

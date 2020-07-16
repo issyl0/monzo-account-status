@@ -26,6 +26,5 @@ I'm always wary of saying future things in READMEs, in case I never get time.  B
 
 - Finding important transactions (eg rent, bills, groceries) and outputting a CSV for the shared house expenses spreadsheet?
 - Command line switches for each of the current features?
-- Breakdown of what specific balance is in each pot.
 - When I learn a bit more Go, refactoring the code to be better.
 - ...
