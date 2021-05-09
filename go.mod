@@ -1,5 +1,5 @@
 module github.com/go-resty/resty
 
-go 1.14
+go 1.16
 
-require github.com/go-resty/resty/v2 v2.3.0
+require github.com/go-resty/resty/v2 v2.6.0
